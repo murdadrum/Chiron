@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import chapters from './assets/chapters.json';
+import chapters from '../assets/chapters.json';
 
 const TreeNode = ({ node }) => {
     const [expanded, setExpanded] = useState(false);

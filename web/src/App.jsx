@@ -1,12 +1,17 @@
 import React from 'react'
 import './App.css'
-import LessonMap from './LessonMap'
+import DesktopLayout from './components/DesktopLayout'
+import LessonMap from './components/LessonMap'
+import VirtualViewport from './components/VirtualViewport'
+import InstructorConsole from './components/InstructorConsole'
 
 function App() {
   return (
-    <div className="App">
-      <LessonMap />
-    </div>
+    <DesktopLayout
+      leftPanel={<LessonMap />}
+      centerPanel={<VirtualViewport />}
+      bottomPanel={<InstructorConsole />}
+    />
   )
 }
 
