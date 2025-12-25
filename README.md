@@ -28,28 +28,53 @@ The project follows a **Sidecar Architecture** to maximize iteration speed and U
 | **The Bridge** | (In Dev) WebSockets | The nervous system connecting the Web App to Blender. |
 | **The Hands** (Addon) | (In Dev) Python API | A lightweight Blender Addon that listens for commands and executes `bpy` operators. |
 
+## ⚡ Quick Start (One-Click)
+
+On macOS, you can launch the entire environment (Auth + Backend + Frontend) by double-clicking the launch script in the root directory:
+
+1.  Open Finder and navigate to `Chiron3D/`.
+2.  Double-click **`launch_chiron.command`**.
+3.  The script will prompt for GCP authentication (if needed) and open separate terminal tabs for the server and web app.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Node.js & npm
-*   Blender 5.0+ (for Addon usage, coming in Phase 2)
+*   **Node.js & npm**: [Download here](https://nodejs.org/)
+*   **GCP Project**: For Vertex AI (Gemini) access.
+*   **Blender 5.0+**: (Planned for Phase 2)
 
-### Running the Simulation (Phase 1)
-Currently, we are building the **Lesson Map** simulation.
+### ⚙️ Environment Setup
+1. **Backend Auth**: Create a `.env` file in the `server/` directory:
+   ```env
+   GCP_PROJECT_ID=your-project-id
+   PORT=5001
+   ```
+2. **GCP Auth**: Ensure you are authenticated with Google Cloud:
+   ```bash
+   gcloud auth application-default login
+   ```
 
-**1. Start the Backend**
+### 🏁 Running the App
+Chiron3D requires both the backend and frontend to be running simultaneously.
+
+#### 1. Start the AI Brain (Backend)
 ```bash
 cd server
 npm install
 node index.js
 ```
+The server will start at `http://localhost:5001`.
 
-**2. Start the Frontend**
+#### 2. Start the Sidecar UI (Frontend)
+Open a **new terminal tab**:
 ```bash
 cd web
 npm install
 npm run dev
 ```
+The interface will be available at the URL provided by Vite (usually `http://localhost:5173`).
 
 ## 🗺 Roadmap
 
@@ -80,4 +105,4 @@ Chiron3D/
 
 ---
 
-*Authored by Antigravity & Murdadrum.*
+*Authored by Antigravity & murdadrum.*

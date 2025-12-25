@@ -47,8 +47,24 @@ const TreeNode = ({ node }) => {
 
 const LessonMap = () => {
     return (
-        <div className="lesson-map" style={{ textAlign: 'left', padding: '20px', backgroundColor: '#1e1e1e', color: '#e0e0e0', minHeight: '100vh' }}>
-            <h2>Lesson Map: Blender 5.0 Manual</h2>
+        <div className="lesson-map" style={{
+            textAlign: 'left',
+            padding: '20px',
+            backgroundColor: '#111',
+            color: '#e0e0e0',
+            height: '100%',
+            overflowY: 'auto',
+            boxSizing: 'border-box'
+        }}>
+            <h2 style={{
+                fontSize: '0.9rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                color: '#666',
+                marginBottom: '20px',
+                borderBottom: '1px solid #222',
+                paddingBottom: '10px'
+            }}>Lesson Map</h2>
             <div className="chapter-list">
                 {chapters.map((chapter, index) => (
                     <TreeNode key={index} node={chapter} />
