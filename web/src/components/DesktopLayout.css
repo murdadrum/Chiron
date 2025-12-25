@@ -30,5 +30,5 @@
   grid-area: bottom;
   border-top: 1px solid #333;
   background-color: #1e1e1e;
-  overflow-y: auto;
+  overflow: hidden;
 }
