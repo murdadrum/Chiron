@@ -1,16 +1,35 @@
 import React, { useState } from 'react';
 import chapters from '../assets/chapters.json';
+import { useLesson } from '../context/LessonContext';
 
 const TreeNode = ({ node }) => {
     const [expanded, setExpanded] = useState(false);
+    const { selectChapter, selectedChapter } = useLesson();
     const hasChildren = node.children && node.children.length > 0;
+
+    const handleClick = () => {
+        if (hasChildren) {
+            setExpanded(!expanded);
+        } else {
+            selectChapter(node.title);
+        }
+    };
+
+    const isSelected = selectedChapter === node.title;
 
     return (
         <div className="tree-node" style={{ marginLeft: '20px' }}>
             <div
                 className="node-title"
-                onClick={() => setExpanded(!expanded)}
-                style={{ cursor: hasChildren ? 'pointer' : 'default', padding: '4px 0' }}
+                onClick={handleClick}
+                style={{
+                    cursor: 'pointer',
+                    padding: '4px 8px',
+                    backgroundColor: isSelected ? '#3d3d3d' : 'transparent',
+                    borderRadius: '4px',
+                    color: isSelected ? '#00ff88' : '#e0e0e0',
+                    transition: 'all 0.2s'
+                }}
             >
                 {hasChildren && <span style={{ marginRight: '8px' }}>{expanded ? '▼' : '▶'}</span>}
                 {node.title}

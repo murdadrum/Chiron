@@ -24,8 +24,9 @@ The project follows a **Sidecar Architecture** to maximize iteration speed and U
 | Component | Tech Stack | Responsibility |
 | :--- | :--- | :--- |
 | **The Brain** (Guide) | React + Vite | The simulation engine. Visualizes the "Lesson Map", tracks progress, and interacts with Vertex AI. |
-| **The Bridge** | WebSockets/HTTP | The nervous system connecting the Web App to Blender. |
-| **The Hands** (Addon) | Python API | A lightweight Blender Addon that listens for commands and executes `bpy` operators. |
+| **The Backend** | Node.js + Express | Handles AI lesson generation via Gemini 2.0 Flash Exponential. |
+| **The Bridge** | (In Dev) WebSockets | The nervous system connecting the Web App to Blender. |
+| **The Hands** (Addon) | (In Dev) Python API | A lightweight Blender Addon that listens for commands and executes `bpy` operators. |
 
 ## 🚀 Getting Started
 
@@ -55,14 +56,15 @@ npm run dev
 - [x] **Phase 0: Ingestion**
     - [x] Extraction of 3,000+ manual pages.
     - [x] Structural conversion to JSON Lesson Map.
-- [ ] **Phase 1: The Simulation (Current)**
+- [x] **Phase 1: The Simulation (Current)**
     - [x] Interactive Lesson Tree UI.
-    - [ ] Vertex AI Content Generation.
-    - [ ] Simulated "Virtual Blender" View.
+    - [x] Vertex AI Content Generation (Gemini 2.0 Flash).
+    - [x] Custom AI Request Support ("Ask Chiron...").
+    - [x] Simulated "Virtual Blender" View.
 - [ ] **Phase 2: The Connector**
     - [ ] Python Addon development.
-    - [ ] "Hello World" Socket connection.
-    - [ ] UI Highlighting system.
+    - [ ] Web Socket Gateway integration.
+    - [ ] Direct UI Highlighting system.
 
 ## 📂 Directory Structure
 

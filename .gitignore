@@ -2,5 +2,7 @@
 BlenderManual5.0.epub/
 blender_manual_v500_en.html/
 web/node_modules/
+server/node_modules/
+server/.env
 __pycache__/
 *.pyc
