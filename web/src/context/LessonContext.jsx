@@ -83,6 +83,14 @@ export const LessonProvider = ({ children }) => {
         }
     };
 
+    const resetLesson = () => {
+        setSelectedChapter(null);
+        setLessonData(null);
+        setError(null);
+        setLoading(false);
+        setCurrentStepIndex(0);
+    };
+
     return (
         <LessonContext.Provider value={{
             selectedChapter,
@@ -93,7 +101,8 @@ export const LessonProvider = ({ children }) => {
             selectChapter,
             requestCustomLesson,
             nextStep,
-            prevStep
+            prevStep,
+            resetLesson
         }}>
             {children}
         </LessonContext.Provider>

@@ -37,17 +37,17 @@ The project follows a **Sidecar Architecture** to maximize iteration speed and U
 ### Running the Simulation (Phase 1)
 Currently, we are building the **Lesson Map** simulation.
 
+**1. Start the Backend**
 ```bash
-# Clone the repository
-git clone https://github.com/murdadrum/Chiron3D.git
-
-# Enter the Web App directory
-cd Chiron3D/web
-
-# Install dependencies
+cd server
 npm install
+node index.js
+```
 
-# Start the interactive simulation
+**2. Start the Frontend**
+```bash
+cd web
+npm install
 npm run dev
 ```
 
@@ -61,6 +61,8 @@ npm run dev
     - [x] Vertex AI Content Generation (Gemini 2.0 Flash).
     - [x] Custom AI Request Support ("Ask Chiron...").
     - [x] Simulated "Virtual Blender" View.
+    - [x] **Full-Window Conformance**: Optimized UI for premium dashboard experience.
+    - [x] **Interactive Loop**: Robust "Lesson Finished" flow with session resets.
 - [ ] **Phase 2: The Connector**
     - [ ] Python Addon development.
     - [ ] Web Socket Gateway integration.
@@ -71,7 +73,8 @@ npm run dev
 ```text
 Chiron3D/
 ├── data/           # Raw Manual extraction scripts & datasets
-├── web/            # The React "Sidecar" Application
+├── web/            # The React "Sidecar" Frontend
+├── server/         # The Node.js AI Backend
 └── addon/          # (Planned) The Blender Python Addon
 ```
 

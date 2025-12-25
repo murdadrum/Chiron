@@ -2,8 +2,20 @@ import React from 'react';
 import { useLesson } from '../context/LessonContext';
 
 const InstructorConsole = () => {
-    const { selectedChapter, lessonData, loading, error, currentStepIndex, nextStep, prevStep, requestCustomLesson } = useLesson();
+    const { selectedChapter, lessonData, loading, error, currentStepIndex, nextStep, prevStep, requestCustomLesson, resetLesson } = useLesson();
     const [inputValue, setInputValue] = React.useState('');
+    const [isFinished, setIsFinished] = React.useState(false);
+
+    React.useEffect(() => {
+        if (loading) {
+            setIsFinished(false);
+        }
+    }, [loading]);
+
+    const handleFinished = () => {
+        setIsFinished(true);
+        resetLesson();
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -86,8 +98,7 @@ const InstructorConsole = () => {
                             Previous
                         </button>
                         <button
-                            onClick={nextStep}
-                            disabled={currentStepIndex === lessonData.length - 1}
+                            onClick={currentStepIndex === lessonData.length - 1 ? handleFinished : nextStep}
                             style={{
                                 padding: '8px 16px',
                                 backgroundColor: '#00ff88',
@@ -95,8 +106,16 @@ const InstructorConsole = () => {
                                 color: '#000',
                                 fontWeight: 'bold',
                                 borderRadius: '4px',
-                                cursor: currentStepIndex === lessonData.length - 1 ? 'not-allowed' : 'pointer',
-                                opacity: currentStepIndex === lessonData.length - 1 ? 0.5 : 1
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s, box-shadow 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.transform = 'scale(1.05)';
+                                e.target.style.boxShadow = '0 0 15px rgba(0, 255, 136, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.transform = 'scale(1)';
+                                e.target.style.boxShadow = 'none';
                             }}
                         >
                             {currentStepIndex === lessonData.length - 1 ? 'Lesson Finished' : 'Next Step'}
@@ -107,7 +126,13 @@ const InstructorConsole = () => {
 
             {!loading && !currentStep && !error && (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-                    <p style={{ color: '#888', marginBottom: '20px' }}>System Online. Select a chapter from the Lesson Map OR ask me anything below.</p>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{isFinished ? '✨' : '🎯'}</div>
+                    <h2 style={{ margin: '0 0 10px 0', color: '#fff' }}>{isFinished ? "Lesson Finished!" : "System Online"}</h2>
+                    <p style={{ color: '#888', maxWidth: '400px' }}>
+                        {isFinished
+                            ? "Great job! You've mastered this chapter. What's next?"
+                            : "Select a chapter from the Lesson Map OR ask me anything below."}
+                    </p>
                 </div>
             )}
 
