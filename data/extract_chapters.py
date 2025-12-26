@@ -67,5 +67,5 @@ def extract_chapters(file_path):
         print(f"{indent}- {title}")
 
 if __name__ == "__main__":
-    manual_path = "/Users/murdadrum/Blender/Docutorials/blender_manual_v500_en.html/index.html"
+    manual_path = "/Users/murdadrum/Blender/Chiron/blender_manual_v500_en.html/index.html"
     extract_chapters(manual_path)

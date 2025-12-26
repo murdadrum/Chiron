@@ -5,8 +5,6 @@
 [![Stack](https://img.shields.io/badge/Tech-React_•_Vite_•_Python_•_Vertex_AI-blue?style=for-the-badge)]()
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)]()
 
-> **Project Docutorials**: Transforming the massive Blender Manual into an interactive, voice-guided AI tutor that lives inside your workflow.
-
 ---
 
 ## 🔮 Vision

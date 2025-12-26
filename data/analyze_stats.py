@@ -102,5 +102,5 @@ def analyze_manual(root_dir):
     print(f"Total Estimated Pages: {total_pages:.1f}")
 
 if __name__ == "__main__":
-    manual_path = "/Users/murdadrum/Blender/Docutorials/blender_manual_v500_en.html"
+    manual_path = "/Users/murdadrum/Blender/Chiron/blender_manual_v500_en.html"
     analyze_manual(manual_path)
