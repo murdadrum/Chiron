@@ -45,62 +45,88 @@ On macOS, you can launch the entire environment (Auth + Backend + Frontend) by d
 
 ### ⚙️ Environment Setup
 1. **Backend Auth**: Create a `.env` file in the `server/` directory:
-   ```env
-   GCP_PROJECT_ID=your-project-id
-   PORT=5001
-   ```
-2. **GCP Auth**: Ensure you are authenticated with Google Cloud:
-   ```bash
-   gcloud auth application-default login
-   ```
+# 🏹 Chiron3D — Interactive AI Sidecar for Blender
 
-### 🏁 Running the App
-Chiron3D requires both the backend and frontend to be running simultaneously.
+[![Status](https://img.shields.io/badge/Status-Phase_1:_Simulation-blueviolet?style=for-the-badge)](https://github.com/murdadrum/Chiron3D)
+[![Stack](https://img.shields.io/badge/Tech-React_•_Vite_•_Node_•_Python_•_Vertex_AI-blue?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)]()
 
-#### 1. Start the AI Brain (Backend)
+Chiron3D is a guided, AI-driven tutorial platform that runs alongside Blender. The web-based "Sidecar" UI (React/Vite) acts as the lesson engine while a lightweight Blender addon (Python) executes safe, deterministic demo steps and highlights UI elements.
+
+**Quick links**
+- Web UI: [web/](web)
+- Backend: [server/](server)
+- Blender addon: [addon/](addon) (loader + placeholder)
+- MCP integration docs: [docs/mcp-integration.md](docs/mcp-integration.md)
+
+---
+
+## ✨ What it does
+- Generate context-aware lesson steps using Vertex AI (Gemini).
+- Simulate and visualize lessons in the Sidecar UI.
+- Forward structured lesson JSON to Blender to execute safe, pre-defined commands.
+
+## 📐 Architecture (high level)
+- Brain (Guide): React + Vite — lesson map, UI, and prompts.
+- Backend: Node.js + Express — orchestrates Gemini calls and serves APIs.
+- Bridge: Socket/HTTP proxy (dev) — forwards lessons to the MCP server.
+- Hands: Blender Addon (Python) — executes whitelisted commands using `bpy`.
+
+## 🚀 Quick Start
+Note: these steps assume a macOS development machine. For Linux/Windows adjust commands accordingly.
+
+1) Start the MCP server (if you vendor `blender-mcp` under `third_party/`):
+
+```bash
+./tools/run-blender-mcp.sh
+```
+
+2) Start Chiron backend
+
 ```bash
 cd server
 npm install
 node index.js
 ```
-The server will start at `http://localhost:5001`.
 
-#### 2. Start the Sidecar UI (Frontend)
-Open a **new terminal tab**:
+3) Start Sidecar UI
+
 ```bash
 cd web
 npm install
 npm run dev
 ```
-The interface will be available at the URL provided by Vite (usually `http://localhost:5173`).
 
-## 🗺 Roadmap
+4) Install/enable the Blender addon
 
-- [x] **Phase 0: Ingestion**
-    - [x] Extraction of 3,000+ manual pages.
-    - [x] Structural conversion to JSON Lesson Map.
-- [x] **Phase 1: The Simulation (Current)**
-    - [x] Interactive Lesson Tree UI.
-    - [x] Vertex AI Content Generation (Gemini 2.0 Flash).
-    - [x] Custom AI Request Support ("Ask Chiron...").
-    - [x] Simulated "Virtual Blender" View.
-    - [x] **Full-Window Conformance**: Optimized UI for premium dashboard experience.
-    - [x] **Interactive Loop**: Robust "Lesson Finished" flow with session resets.
-- [ ] **Phase 2: The Connector**
-    - [ ] Python Addon development.
-    - [ ] Web Socket Gateway integration.
-    - [ ] Direct UI Highlighting system.
+Open Blender → Preferences → Add-ons → Install → pick `addon/gemini_addon.py` and enable it. With `third_party/blender-mcp` present the loader will use the upstream addon; otherwise a safe test panel appears under the "Chiron" sidebar.
 
-## 📂 Directory Structure
+5) Run the smoke test from [docs/mcp-integration.md](docs/mcp-integration.md) to validate end-to-end flow.
 
-```text
+---
+
+## 🧭 Developer notes
+- The repo contains a loader-style addon at `addon/gemini_addon.py` that will dynamically load an upstream `gemini_addon.py` if you add the upstream project into `third_party/blender-mcp/` (recommended as a submodule).
+- A small proxy router `server/mcp_proxy.js` is included to forward lesson JSON to the MCP server (mount it in your Express app: `app.use('/api', require('./mcp_proxy'))`).
+- Defaults: `MCP_HOST=localhost`, `MCP_PORT=9876`, Chiron server default port `5001`.
+
+## 🛡 Safety & Security
+- The Blender addon intentionally maps incoming lesson `command` tokens to a whitelist of safe handlers. It does NOT execute arbitrary Python received from the network.
+- By default the MCP server should bind to `127.0.0.1` (local-only). If you bind externally, add authentication (see `MCP_AUTH_TOKEN`).
+
+## 📁 Project layout
+
+```
 Chiron3D/
-├── data/           # Raw Manual extraction scripts & datasets
-├── web/            # The React "Sidecar" Frontend
-├── server/         # The Node.js AI Backend
-└── addon/          # (Planned) The Blender Python Addon
+├─ addon/                # Blender addon loader + placeholder
+├─ data/                 # Manual extraction & conversion scripts
+├─ docs/                 # Integration & developer docs
+├─ server/               # Node.js backend (AI orchestration)
+└─ web/                  # React/Vite Sidecar UI
 ```
 
 ---
 
-*Authored by Antigravity & murdadrum.*
+If you'd like, I can create a PR that adds the upstream `blender-mcp` as a submodule and mounts `server/mcp_proxy.js` automatically into the Express app.
+
+Authors: murdadrum & contributors
