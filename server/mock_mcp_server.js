@@ -7,26 +7,34 @@
  * Enable by setting USE_MOCK_MCP=true in env before starting `server/index.js`.
  */
 
-const express = require('express');
+const express = require("express");
 
 function startMockMCP() {
   const app = express();
-  app.use(express.json({ limit: '2mb' }));
+  app.use(express.json({ limit: "2mb" }));
 
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok', server: 'mock-mcp' });
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", server: "mock-mcp" });
   });
 
-  app.post('/lesson', (req, res) => {
+  app.post("/lesson", (req, res) => {
     const payload = req.body;
-    console.log('[mock-mcp] Received lesson payload:', JSON.stringify(payload).slice(0, 1000));
+    console.log(
+      "[mock-mcp] Received lesson payload:",
+      JSON.stringify(payload).slice(0, 1000)
+    );
     // Respond with a simple acknowledgement
-    res.json({ success: true, received: Array.isArray(payload.lesson) ? payload.lesson.length : 0 });
+    res.json({
+      success: true,
+      received: Array.isArray(payload.lesson) ? payload.lesson.length : 0,
+    });
   });
 
   const port = process.env.MCP_PORT || 9876;
-  app.listen(port, '127.0.0.1', () => {
-    console.log(`[mock-mcp] Mock MCP server listening on http://127.0.0.1:${port}`);
+  app.listen(port, "127.0.0.1", () => {
+    console.log(
+      `[mock-mcp] Mock MCP server listening on http://127.0.0.1:${port}`
+    );
   });
 }
 

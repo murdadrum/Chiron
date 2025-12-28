@@ -30,13 +30,13 @@ try {
 }
 
 // Optionally start a mock MCP server for local testing
-if (process.env.USE_MOCK_MCP === 'true') {
+if (process.env.USE_MOCK_MCP === "true") {
   try {
-    const mock = require('./mock_mcp_server');
+    const mock = require("./mock_mcp_server");
     mock.startMockMCP();
-    console.log('Started mock MCP server (USE_MOCK_MCP=true)');
+    console.log("Started mock MCP server (USE_MOCK_MCP=true)");
   } catch (err) {
-    console.log('Failed to start mock MCP server:', err.message);
+    console.log("Failed to start mock MCP server:", err.message);
   }
 }
 
