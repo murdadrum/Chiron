@@ -22,11 +22,22 @@ try {
 
 // Mount TTS proxy if present
 try {
-  const ttsProxy = require('./tts_proxy');
-  app.use('/api', ttsProxy);
-  console.log('Mounted TTS proxy at /api/tts');
+  const ttsProxy = require("./tts_proxy");
+  app.use("/api", ttsProxy);
+  console.log("Mounted TTS proxy at /api/tts");
 } catch (err) {
-  console.log('TTS proxy not found or failed to load:', err.message);
+  console.log("TTS proxy not found or failed to load:", err.message);
+}
+
+// Optionally start a mock MCP server for local testing
+if (process.env.USE_MOCK_MCP === 'true') {
+  try {
+    const mock = require('./mock_mcp_server');
+    mock.startMockMCP();
+    console.log('Started mock MCP server (USE_MOCK_MCP=true)');
+  } catch (err) {
+    console.log('Failed to start mock MCP server:', err.message);
+  }
 }
 
 // Initialize Vertex AI
