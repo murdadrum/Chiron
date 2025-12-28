@@ -112,3 +112,18 @@ else:
 
     if __name__ == "__main__":
         register()
+
+# Merge in any extra command handlers (e.g., SPEAK) provided by `addon/command_handlers.py`
+try:
+    from .command_handlers import COMMAND_HANDLERS as EXTRA_COMMAND_HANDLERS
+except Exception:
+    EXTRA_COMMAND_HANDLERS = {}
+
+if EXTRA_COMMAND_HANDLERS:
+    try:
+        if 'COMMAND_HANDLERS' in globals():
+            COMMAND_HANDLERS.update(EXTRA_COMMAND_HANDLERS)
+        else:
+            COMMAND_HANDLERS = EXTRA_COMMAND_HANDLERS
+    except Exception as e:
+        print('[chiron.addon] Failed to merge EXTRA_COMMAND_HANDLERS:', e)
