@@ -144,6 +144,19 @@ const InstructorConsole = () => {
     e.preventDefault();
     if (inputValue.trim()) {
       requestCustomLesson(inputValue);
+      {
+        /* Toggle for including detailed instructions in initial chat context */
+      }
+      <div
+        style={{
+          marginTop: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+        }}
+      >
+        <ToggleIncludeDetails />
+      </div>;
       setInputValue("");
     }
   };
