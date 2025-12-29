@@ -1,53 +1,135 @@
-# 🏹 Chiron3D
+# 🏹 Chiron3D — Interactive AI Sidecar (MVP)
 
-### The Interactive AI "Sidecar" for Blender 5.0
-
-[![Status](https://img.shields.io/badge/Status-Phase_1:_Simulation-blueviolet?style=for-the-badge)](https://github.com/murdadrum/Chiron3D)
-[![Stack](https://img.shields.io/badge/Tech-React_•_Vite_•_Python_•_Vertex_AI-blue?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/Status-MVP-ready-orange?style=for-the-badge)](https://github.com/murdadrum/Chiron3D)
+[![Tech](https://img.shields.io/badge/Tech-React_•_Vite_•_Node_•_Python-blue?style=for-the-badge)]()
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)]()
 
----
+Short: Chiron3D is a guided, AI-driven lesson engine that runs alongside Blender. The web UI generates and simulates lessons, while a lightweight Blender addon (Python) executes a whitelisted set of safe demo commands.
 
-## 🔮 Vision
+This README focuses on what you need to demo the MVP to prospective users quickly: minimal setup, demo script, and known limitations.
 
-**Chiron3D** is not just a tutorial; it's a **Lesson Engine**. By decoupling the instruction from the application, we perform "Sidecar Teaching": a rich, multimedia Web Application runs alongside Blender, communicating in real-time to:
-
-- **Highlight** UI elements dynamically.
-- **Execute** demo steps for you ("Show, Don't Tell").
-- **Explain** concepts using context-aware AI voice.
-
-## 🏗 Architecture
-
-The project follows a **Sidecar Architecture** to maximize iteration speed and UI capability.
-
-| Component             | Tech Stack          | Responsibility                                                                                     |
-| :-------------------- | :------------------ | :------------------------------------------------------------------------------------------------- |
-| **The Brain** (Guide) | React + Vite        | The simulation engine. Visualizes the "Lesson Map", tracks progress, and interacts with Vertex AI. |
-| **The Backend**       | Node.js + Express   | Handles AI lesson generation via Gemini 2.0 Flash Exponential.                                     |
-| **The Bridge**        | (In Dev) WebSockets | The nervous system connecting the Web App to Blender.                                              |
-| **The Hands** (Addon) | (In Dev) Python API | A lightweight Blender Addon that listens for commands and executes `bpy` operators.                |
-
-## ⚡ Quick Start (One-Click)
-
-On macOS, you can launch the entire environment (Auth + Backend + Frontend) by double-clicking the launch script in the root directory:
-
-1.  Open Finder and navigate to `Chiron3D/`.
-2.  Double-click **`launch_chiron.command`**.
-3.  The script will prompt for GCP authentication (if needed) and open separate terminal tabs for the server and web app.
+Contents
+- Quick demo (one-command)
+- What to expect in the MVP
+- Run steps (backend, UI, Blender addon)
+- Smoke tests and demo script
+- Next steps and how to help
 
 ---
 
-## 🚀 Getting Started
+## ✨ MVP Highlights
 
-### Prerequisites
+- Generate short, context-aware lesson steps using the backend AI service (local mock available).
+- Sidecar UI (React) that visualizes lessons, steps, and a lesson map.
+- Blender addon loader that accepts lesson JSON and executes whitelisted commands (SPEAK, ADD_CUBE, SELECT_OBJECT, etc.).
+- TTS integration (macOS `say` fallback; `pyttsx3` supported if installed in Blender Python).
+- Safety: no arbitrary Python execution; lessons map to a safe command surface.
 
-- **Node.js & npm**: [Download here](https://nodejs.org/)
-- **GCP Project**: For Vertex AI (Gemini) access.
-- **Blender 5.0+**: (Planned for Phase 2)
+---
 
-### ⚙️ Environment Setup
+## 🚀 Quick Demo (one-command)
 
-1. **Backend Auth**: Create a `.env` file in the `server/` directory:
+On macOS the repository includes a launcher that installs the addon into your Blender user addons dir and starts the backend + UI in the background.
+
+Steps:
+
+```bash
+# Make launcher executable (one-time)
+chmod +x tools/install_and_run.sh tools/launch_chiron.command
+
+# Run installer + server + UI + copy addon to Blender user addons
+./tools/install_and_run.sh --install-addon
+```
+
+Wait for logs in `/tmp/chiron_logs` (server + demo frontend). Open the web UI (Vite will show the local URL in its logs, typically http://localhost:5173 or 5174).
+
+Install and enable the add-on in Blender (Preferences → Add-ons) if the script didn't copy it for you.
+
+---
+
+## 🛠 Manual Run (recommended for debugging)
+
+1) Start mock MCP server and backend together (recommended for demos):
+
+```bash
+cd server
+npm install
+USE_MOCK_MCP=true MCP_PORT=9876 node index.js
+```
+
+2) Start the web UI:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+3) Install the Blender add-on (developer flow):
+
+```bash
+# copy the addon to Blender's user addons folder (adjust Blender version path)
+mkdir -p "$HOME/Library/Application Support/Blender/5.0/scripts/addons/chiron_addon"
+rsync -a addon/ "$HOME/Library/Application Support/Blender/5.0/scripts/addons/chiron_addon/"
+# then open Blender and enable the add-on in Preferences → Add-ons
+```
+
+4) Smoke test TTS & lesson forwarding (from your terminal):
+
+```bash
+curl -i -X POST http://localhost:5001/api/tts \
+	-H 'Content-Type: application/json' \
+	-d '{"text":"Hello from demo","voice":"Alex"}'
+```
+
+Confirm the mock MCP logs show receipt and that Blender (or your mock) printed a matching lesson payload.
+
+---
+
+## 🎬 Demo Script (5–10 minutes)
+
+1. Show the Sidecar UI landing page and explain the Sidecar pattern (web UI + Blender).
+2. Toggle `Detailed steps` in the chat area to demonstrate granular instructions generation (toggle exists in the prompt header and initial prompt).
+3. Ask Chiron to "Create a simple cube and color it" (or use the prebuilt chapter). Walk through step playback.
+4. Trigger TTS and show that the lesson JSON was forwarded to the MCP (mock logs) and that a SPEAK command executed.
+5. Finish by summarizing safety measures: whitelisted commands, local-only defaults, and signing recommendations.
+
+---
+
+## ⚙️ Implementer Notes
+
+- Location of key parts:
+	- UI: `web/` (React + Vite)
+	- Backend: `server/` (Node.js)
+	- Addon: `addon/` (Blender loader + handlers)
+	- Docs: `docs/` (integration & API)
+
+- Important env vars:
+	- `USE_MOCK_MCP=true` — run with a local mock MCP for demos.
+	- `MCP_HOST`, `MCP_PORT` — where the MCP accepts lessons (defaults: localhost:9876).
+	- `MCP_AUTH_TOKEN` — optional for secure deployments.
+
+---
+
+## Known Limitations (MVP)
+
+- Blender integration is a loader pattern — upstream `blender-mcp` is recommended as a submodule but not required for the demo.
+- TTS cross-platform requires `pyttsx3` installed into Blender's Python for non-macOS.
+- Lesson schema and signing are supported as a concept; production signing/key rotation requires additional ops work.
+
+---
+
+## How to help / Next steps
+
+- Add `third_party/blender-mcp` as a Git submodule (I can do that in a PR).
+- Add OpenAPI/JSON Schema artifacts for `docs/MCP_API.md` and CI validation.
+- Add a small acceptance test that runs the backend with `USE_MOCK_MCP=true` and posts a sample `/api/tts` to validate end-to-end.
+
+---
+
+Maintainers: murdadrum & contributors
+
+License: MIT
 
 # 🏹 Chiron3D — Interactive AI Sidecar for Blender
 
