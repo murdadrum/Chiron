@@ -9,6 +9,7 @@ Short: Chiron3D is a guided, AI-driven lesson engine that runs alongside Blender
 This README focuses on what you need to demo the MVP to prospective users quickly: minimal setup, demo script, and known limitations.
 
 Contents
+
 - Quick demo (one-command)
 - What to expect in the MVP
 - Run steps (backend, UI, Blender addon)
@@ -49,7 +50,7 @@ Install and enable the add-on in Blender (Preferences → Add-ons) if the script
 
 ## 🛠 Manual Run (recommended for debugging)
 
-1) Start mock MCP server and backend together (recommended for demos):
+1. Start mock MCP server and backend together (recommended for demos):
 
 ```bash
 cd server
@@ -57,7 +58,7 @@ npm install
 USE_MOCK_MCP=true MCP_PORT=9876 node index.js
 ```
 
-2) Start the web UI:
+2. Start the web UI:
 
 ```bash
 cd web
@@ -65,7 +66,7 @@ npm install
 npm run dev
 ```
 
-3) Install the Blender add-on (developer flow):
+3. Install the Blender add-on (developer flow):
 
 ```bash
 # copy the addon to Blender's user addons folder (adjust Blender version path)
@@ -74,7 +75,7 @@ rsync -a addon/ "$HOME/Library/Application Support/Blender/5.0/scripts/addons/ch
 # then open Blender and enable the add-on in Preferences → Add-ons
 ```
 
-4) Smoke test TTS & lesson forwarding (from your terminal):
+4. Smoke test TTS & lesson forwarding (from your terminal):
 
 ```bash
 curl -i -X POST http://localhost:5001/api/tts \
@@ -99,15 +100,16 @@ Confirm the mock MCP logs show receipt and that Blender (or your mock) printed a
 ## ⚙️ Implementer Notes
 
 - Location of key parts:
-	- UI: `web/` (React + Vite)
-	- Backend: `server/` (Node.js)
-	- Addon: `addon/` (Blender loader + handlers)
-	- Docs: `docs/` (integration & API)
+
+  - UI: `web/` (React + Vite)
+  - Backend: `server/` (Node.js)
+  - Addon: `addon/` (Blender loader + handlers)
+  - Docs: `docs/` (integration & API)
 
 - Important env vars:
-	- `USE_MOCK_MCP=true` — run with a local mock MCP for demos.
-	- `MCP_HOST`, `MCP_PORT` — where the MCP accepts lessons (defaults: localhost:9876).
-	- `MCP_AUTH_TOKEN` — optional for secure deployments.
+  - `USE_MOCK_MCP=true` — run with a local mock MCP for demos.
+  - `MCP_HOST`, `MCP_PORT` — where the MCP accepts lessons (defaults: localhost:9876).
+  - `MCP_AUTH_TOKEN` — optional for secure deployments.
 
 ---
 
