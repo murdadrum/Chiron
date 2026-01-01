@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chiron Lesson Pack",
+  "type": "object",
+  "required": ["lesson_id", "title", "steps"],
+  "properties": {
+    "lesson_id": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "version": { "type": "string" },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step_id", "instruction_text", "command"],
+        "properties": {
+          "step_id": { "type": "string" },
+          "instruction_text": { "type": "string" },
+          "command": { "type": "string" },
+          "args": { "type": ["object", "null"] }
+        }
+      }
+    }
+  }
+}

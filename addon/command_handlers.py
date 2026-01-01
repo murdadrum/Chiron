@@ -4,56 +4,123 @@ This file is imported by the addon loader and merged into the main
 `COMMAND_HANDLERS` mapping when present.
 """
 import platform
-import subprocess
 import threading
+import queue
+import os
+import logging
+from typing import Dict, Any
+
+LOGGER = logging.getLogger("chiron.command_handlers")
+
+# Configuration
+MAX_TTS_LENGTH = 2000
 
 
-def _run_subprocess(cmd):
+class _TTSWorker:
+    def __init__(self):
+        self._q = queue.Queue()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._running = False
+
+    def start(self):
+        if not self._running:
+            self._running = True
+            self._thread.start()
+
+    def enqueue(self, text: str, voice: str | None = None):
+        self._q.put((text, voice))
+        self.start()
+
+    def _run(self):
+        while self._running:
+            try:
+                text, voice = self._q.get()
+            except Exception:
+                break
+            try:
+                self._speak_immediate(text, voice)
+            except Exception as e:
+                LOGGER.exception("TTS playback failed: %s", e)
+            finally:
+                self._q.task_done()
+
+    def _speak_immediate(self, text: str, voice: str | None = None):
+        # Prefer pyttsx3 if available, else fall back to macOS `say` when explicitly allowed.
+        try:
+            import pyttsx3
+
+            engine = pyttsx3.init()
+            if voice:
+                try:
+                    engine.setProperty('voice', voice)
+                except Exception:
+                    LOGGER.debug('Failed to set voice "%s", ignoring', voice)
+            engine.say(text)
+            engine.runAndWait()
+            return
+        except Exception:
+            LOGGER.debug("pyttsx3 not available or failed, checking platform fallback")
+
+        if platform.system() == 'Darwin' and os.environ.get('CHIRON_ALLOW_SAY') == '1':
+            # macOS fallback when explicitly allowed by env var
+            import subprocess
+
+            try:
+                cmd = ['say']
+                if voice:
+                    cmd += ['-v', voice]
+                cmd += [text]
+                subprocess.Popen(cmd)
+                return
+            except Exception:
+                LOGGER.exception("macOS say failed")
+
+        LOGGER.warning("No available TTS engine for text: %s", text[:80])
+
+
+# single shared worker
+_tts_worker = _TTSWorker()
+
+
+def _is_tts_enabled() -> bool:
+    # Prefer addon preferences, then scene opt-in flag, then environment opt-in.
     try:
-        subprocess.Popen(cmd)
-    except Exception as e:
-        print(f"[Chiron] TTS subprocess failed: {e}")
+        import bpy
+        addon_key = __package__ or __name__.split('.')[0]
+        try:
+            prefs = bpy.context.preferences.addons[addon_key].preferences
+            if hasattr(prefs, 'chiron_tts_enabled'):
+                return bool(getattr(prefs, 'chiron_tts_enabled'))
+        except Exception:
+            pass
+
+        scn = bpy.context.scene
+        if hasattr(scn, 'chiron_tts_enabled'):
+            return bool(getattr(scn, 'chiron_tts_enabled'))
+    except Exception:
+        pass
+
+    return os.environ.get('CHIRON_ALLOW_TTS', '0') == '1'
 
 
-def speak_handler(params: dict):
-    text = params.get('text') or ''
+def speak_handler(params: Dict[str, Any]):
+    text = (params.get('text') or params.get('message') or '').strip()
     voice = params.get('voice')
     if not text:
-        print('[Chiron] SPEAK: no text provided')
+        LOGGER.info('SPEAK: no text provided')
         return {'status': 'no_text'}
 
-    system = platform.system()
-    try:
-        if system == 'Darwin':
-            cmd = ['say']
-            if voice:
-                cmd += ['-v', voice]
-            cmd += [text]
-            threading.Thread(target=_run_subprocess, args=(cmd,), daemon=True).start()
-            return {'status': 'speaking', 'engine': 'say'}
-        else:
-            # Try pyttsx3 as a cross-platform fallback
-            try:
-                import pyttsx3
+    if len(text) > MAX_TTS_LENGTH:
+        LOGGER.warning('SPEAK: text too long (%d chars)', len(text))
+        return {'status': 'too_long', 'max': MAX_TTS_LENGTH}
 
-                def _pyttsx3_speak():
-                    try:
-                        engine = pyttsx3.init()
-                        if voice:
-                            engine.setProperty('voice', voice)
-                        engine.say(text)
-                        engine.runAndWait()
-                    except Exception as e:
-                        print('[Chiron] pyttsx3 speak failed:', e)
+    if not _is_tts_enabled():
+        LOGGER.info('SPEAK: TTS disabled by user or environment')
+        return {'status': 'disabled'}
 
-                threading.Thread(target=_pyttsx3_speak, daemon=True).start()
-                return {'status': 'speaking', 'engine': 'pyttsx3'}
-            except Exception as e:
-                print('[Chiron] TTS not available (pyttsx3)', e)
-                return {'status': 'no_tts_engine'}
-    except Exception as e:
-        print('[Chiron] SPEAK handler failed:', e)
-        return {'status': 'error', 'error': str(e)}
+    # enqueue for background playback
+    _tts_worker.enqueue(text, voice)
+    return {'status': 'queued'}
 
 
 COMMAND_HANDLERS = {

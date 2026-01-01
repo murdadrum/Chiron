@@ -15,20 +15,31 @@ import sys
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 THIRD_PARTY_ADDON = os.path.normpath(os.path.join(THIS_DIR, "..", "third_party", "blender-mcp", "gemini_addon.py"))
 
-if os.path.exists(THIRD_PARTY_ADDON):
-    # Load upstream addon file dynamically
+# In production builds we must NOT execute arbitrary upstream code.
+# Allow dynamic loading only in explicit development mode (CHIRON_DEV_MODE=1).
+if os.path.exists(THIRD_PARTY_ADDON) and os.environ.get("CHIRON_DEV_MODE") == "1":
+    # Dev-only: load upstream addon file dynamically for local testing.
     spec = importlib.util.spec_from_file_location("chiron.upstream_gemini", THIRD_PARTY_ADDON)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    # expose module-level names if needed
-    globals().update({k: getattr(module, k) for k in dir(module) if not k.startswith("__")})
+    # Do not blindly inject all globals; expose only a safe, minimal surface if required.
+    try:
+        if hasattr(module, "register") and hasattr(module, "unregister"):
+            register = module.register
+            unregister = module.unregister
+    except Exception:
+        pass
+else:
+    if os.path.exists(THIRD_PARTY_ADDON):
+        # Upstream addon is present but we're not in dev mode — refuse to execute it.
+        print("[chiron.addon] Upstream gemini_addon found but CHIRON_DEV_MODE!=1; skipping execution for safety.")
 else:
     # Fallback minimal safe implementation
     import bpy
     import urllib.request
     import urllib.error
-    from bpy.props import StringProperty
+    from bpy.props import StringProperty, BoolProperty
 
     bl_info = {
         "name": "Chiron MCP Placeholder",
@@ -39,6 +50,27 @@ else:
         "description": "Placeholder UI for MCP integration; safe test operator only.",
         "category": "3D View",
     }
+
+    class CHIRON_AddonPreferences(bpy.types.AddonPreferences):
+        bl_idname = __package__ or __name__.split('.')[0]
+
+        chiron_tts_enabled: BoolProperty(
+            name="Enable TTS",
+            description="Allow Chiron to play TTS audio locally (opt-in)",
+            default=False,
+        )
+
+        chiron_tts_voice: StringProperty(
+            name="TTS Voice",
+            description="Preferred TTS voice name (optional)",
+            default="",
+        )
+
+        def draw(self, context):
+            layout = self.layout
+            layout.label(text="Chiron Preferences")
+            layout.prop(self, "chiron_tts_enabled")
+            layout.prop(self, "chiron_tts_voice")
 
     class CHIRON_OT_mcp_test_connection(bpy.types.Operator):
         bl_idname = "chiron.mcp_test_connection"
@@ -75,6 +107,15 @@ else:
             layout.prop(scn, "chiron_mcp_host")
             layout.prop(scn, "chiron_mcp_port")
             layout.prop(scn, "chiron_mcp_protocol")
+            # Show persisted addon preferences for TTS when available
+            try:
+                addon_key = __package__ or __name__.split('.')[0]
+                prefs = context.preferences.addons[addon_key].preferences
+                layout.prop(prefs, "chiron_tts_enabled")
+                layout.prop(prefs, "chiron_tts_voice")
+            except Exception:
+                # Fallback to scene-level toggle if preferences unavailable
+                layout.prop(scn, "chiron_tts_enabled")
             layout.operator("chiron.mcp_test_connection", icon="URL")
 
 
@@ -94,7 +135,13 @@ else:
             description="http or https",
             default="http",
         )
+        # Note: persistent TTS settings are stored in AddonPreferences; keep
+        # a transient scene toggle for quick tests if preferences are unavailable.
 
+        try:
+            bpy.utils.register_class(CHIRON_AddonPreferences)
+        except Exception:
+            pass
         bpy.utils.register_class(CHIRON_OT_mcp_test_connection)
         bpy.utils.register_class(CHIRON_PT_mcp_panel)
 
@@ -106,8 +153,18 @@ else:
             del bpy.types.Scene.chiron_mcp_protocol
         except Exception:
             pass
-        bpy.utils.unregister_class(CHIRON_PT_mcp_panel)
-        bpy.utils.unregister_class(CHIRON_OT_mcp_test_connection)
+        try:
+            bpy.utils.unregister_class(CHIRON_PT_mcp_panel)
+        except Exception:
+            pass
+        try:
+            bpy.utils.unregister_class(CHIRON_OT_mcp_test_connection)
+        except Exception:
+            pass
+        try:
+            bpy.utils.unregister_class(CHIRON_AddonPreferences)
+        except Exception:
+            pass
 
 
     if __name__ == "__main__":

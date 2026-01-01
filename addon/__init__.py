@@ -32,6 +32,14 @@ def register():
         print("[chiron.addon] gemini_addon not found; load placeholder only.")
         return
 
+    # If the upstream module exposes register/unregister helpers, prefer them.
+    try:
+        if hasattr(mod, "register") and callable(mod.register):
+            mod.register()
+            return
+    except Exception:
+        print("[chiron.addon] upstream module.register() failed; falling back to class registration.")
+
     classes = _get_classes_from_module(mod)
     for cls in classes:
         bpy.utils.register_class(cls)
@@ -41,6 +49,15 @@ def unregister():
         mod = importlib.import_module(MODULE_NAME)
     except Exception:
         return
+
+    # Prefer module-provided unregister if available.
+    try:
+        if hasattr(mod, "unregister") and callable(mod.unregister):
+            mod.unregister()
+            return
+    except Exception:
+        print("[chiron.addon] upstream module.unregister() failed; falling back to class unregistration.")
+
     classes = _get_classes_from_module(mod)
     for cls in reversed(classes):
         try:
